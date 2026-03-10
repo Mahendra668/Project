@@ -1,0 +1,84 @@
+Here are all the voice commands you can use based on the project's action modules:
+
+🌐 Web & Search
+
+"Search for machine learning tutorials"
+"What is the latest news about AI?"
+"Compare iPhone 15 vs Samsung S24"
+
+🌤️ Weather
+
+"What's the weather in Chennai?"
+"Will it rain tomorrow in Sivakasi?"
+
+📱 Apps
+
+"Open Chrome"
+"Open Spotify"
+"Open WhatsApp"
+"Open VS Code"
+
+💬 Messaging
+
+"Send a WhatsApp message to Rahul saying I'll be late"
+"Send a Telegram message to Mom saying I'm home"
+
+🖥️ Computer Control
+
+"Take a screenshot"
+"Increase the volume"
+"Set brightness to 50"
+"Close this window"
+"Press Ctrl+C"
+"Scroll down"
+"Switch to dark mode"
+
+📁 Files
+
+"List files on my desktop"
+"Create a file called notes.txt on desktop"
+"Find all PDF files in downloads"
+"Delete file notes.txt"
+"What are the 5 largest files on my computer?"
+
+🌍 Browser
+
+"Go to youtube.com"
+"Search Python tutorials on Google"
+"Click the first result"
+"Fill this form"
+
+🎥 YouTube
+
+"Play lofi music on YouTube"
+"Summarize this YouTube video"
+"Show trending videos in India"
+
+👁️ Vision
+
+"What's on my screen?"
+"Analyze my screen"
+"Look at the camera and tell me what you see"
+
+⏰ Reminders
+
+"Remind me at 6 PM to drink water"
+"Set a reminder for tomorrow 9 AM for my class"
+
+💻 Coding
+
+"Write a Python script to sort a list"
+"Explain this code"
+"Run this Python file"
+"Build a calculator app in Python"
+
+✈️ Flights
+
+"Find flights from Chennai to Delhi on March 20"
+"Search cheapest flights from Madurai to Mumbai"
+
+🤖 Complex Tasks
+
+"Research about artificial intelligence and save it to desktop"
+"Find the weather in 5 cities and save to a file"
+"Search Python jobs and open the first result"
