@@ -1,7 +1,5 @@
 # 🤖 MARK XXX
 
-### 📋 To Refer:
-**Watch The Detailed Video To Set-up This Model**: https://www.youtube.com/watch?v=-YjbWjv1tJg
 
 ### Next-Generation Personal AI Assistant — By Mahendra Prasad
 
@@ -58,4 +56,5 @@ Licensed under **Creative Commons BY-NC 4.0**.
 Engineered by a 17-year-old building a real JARVIS-style assistant.
 
 ⭐ Star the repository to support the project.
+
 
