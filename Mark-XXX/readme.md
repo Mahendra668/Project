@@ -1,8 +1,9 @@
 # 🤖 MARK XXX
 
+## 📋 To Refer:
 **Watch The Detailed Video To Set-up This Model**: https://www.youtube.com/watch?v=-YjbWjv1tJg
 
-### Next-Generation Personal AI Assistant — By FatihMakes
+### Next-Generation Personal AI Assistant — By Mahendra Prasad
 
 A real-time voice AI that can hear, see, understand, and control your Windows computer.
 Local execution. Zero subscriptions(Unless you want to increase request by buying requests from Google AI Studio).
@@ -29,7 +30,7 @@ Designed for speed, autonomy, and real-world usability.
 ## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/FatihMakes
+git clone https://github.com/Mahendra668
 cd mark-xxx
 python setup.py
 python main.py
@@ -40,8 +41,7 @@ System ready in minutes.
 
 If you got some problems or questions to ask or just want to support;
 
-YouTube Account: [text](https://www.youtube.com/@FatihMakes)
-Instagram Account: [text](https://www.instagram.com/fatihmakes/)
+Gmail Account: [text](mahendraprasath558@gmail.com)
 
 ## 📋 Requirements
 
@@ -56,4 +56,5 @@ Personal and non-commercial use only.
 Licensed under **Creative Commons BY-NC 4.0**.
 
 Engineered by a 17-year-old building a real JARVIS-style assistant.
+
 ⭐ Star the repository to support the project.
