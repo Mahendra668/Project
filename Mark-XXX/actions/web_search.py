@@ -21,10 +21,19 @@ def _get_api_key() -> str:
         return json.load(f)["gemini_api_key"]
 
 
-def _gemini_search(query: str) -> str:
-    from google import genai
+# --- Cached client (created once, reused on every call) ---
+_gemini_client = None
 
-    client = genai.Client(api_key=_get_api_key())
+def _get_gemini_client():
+    global _gemini_client
+    if _gemini_client is None:
+        from google import genai
+        _gemini_client = genai.Client(api_key=_get_api_key())
+    return _gemini_client
+# ----------------------------------------------------------
+
+def _gemini_search(query: str) -> str:
+    client = _get_gemini_client()
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite",
         contents=query,

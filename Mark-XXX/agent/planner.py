@@ -158,12 +158,14 @@ def _get_api_key() -> str:
 
 def create_plan(goal: str, context: str = "") -> dict:
     import google.generativeai as genai
-
-    genai.configure(api_key=_get_api_key())
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash-lite",
-        system_instruction=PLANNER_PROMPT
-    )
+    # Cached model — initialized once, reused on every planning call
+    if not hasattr(create_plan, "_model"):
+        genai.configure(api_key=_get_api_key())
+        create_plan._model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash-lite",
+            system_instruction=PLANNER_PROMPT
+        )
+    model = create_plan._model
 
     user_input = f"Goal: {goal}"
     if context:
@@ -218,12 +220,14 @@ def _fallback_plan(goal: str) -> dict:
 
 def replan(goal: str, completed_steps: list, failed_step: dict, error: str) -> dict:
     import google.generativeai as genai
-
-    genai.configure(api_key=_get_api_key())
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
-        system_instruction=PLANNER_PROMPT
-    )
+    # Cached replan model
+    if not hasattr(replan, "_model"):
+        genai.configure(api_key=_get_api_key())
+        replan._model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=PLANNER_PROMPT
+        )
+    model = replan._model
 
     completed_summary = "\n".join(
         f"  - Step {s['step']} ({s['tool']}): DONE" for s in completed_steps

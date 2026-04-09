@@ -127,45 +127,29 @@ def _inject_context(params: dict, tool: str, step_results: dict, goal: str = "")
                 print(f"[Executor] 💉 Injected + translated content")
 
     return params
-def _detect_language(text: str) -> str:
-    import google.generativeai as genai
-    genai.configure(api_key=_get_api_key())
-    model = genai.GenerativeModel("gemini-2.5-flash-lite")
-    try:
-        response = model.generate_content(
-            f"What language is this text written in? "
-            f"Reply with ONLY the language name in English (e.g. Turkish, English, French).\n\n"
-            f"Text: {text[:200]}"
-        )
-        return response.text.strip()
-    except Exception:
-        return "English"
-
-
 def _translate_to_goal_language(content: str, goal: str) -> str:
+    """Detect language and translate in ONE API call instead of two."""
     if not goal:
         return content
     try:
         import google.generativeai as genai
-        genai.configure(api_key=_get_api_key())
-        model = genai.GenerativeModel("gemini-2.5-flash")
-
-        target_lang = _detect_language(goal)
-        print(f"[Executor] 🌐 Translating to: {target_lang}")
+        # Cached model
+        if not hasattr(_translate_to_goal_language, "_model"):
+            genai.configure(api_key=_get_api_key())
+            _translate_to_goal_language._model = genai.GenerativeModel("gemini-2.5-flash")
+        model = _translate_to_goal_language._model
 
         prompt = (
-            f"You are a professional translator. "
-            f"Translate the following text into {target_lang}.\n"
-            f"IMPORTANT:\n"
-            f"- Translate EVERYTHING, leave nothing in English\n"
-            f"- Keep all facts, numbers, and data intact\n"
-            f"- Keep the structure and formatting\n"
-            f"- Output ONLY the translated text, nothing else\n\n"
-            f"Text to translate:\n{content[:4000]}"
+            f"Step 1: Detect the language of this goal text (reply with just the language name in your head).\n"
+            f"Goal: {goal[:150]}\n\n"
+            f"Step 2: Translate the following content into that same detected language.\n"
+            f"RULES: Translate EVERYTHING. Keep all facts, numbers, structure intact.\n"
+            f"Output ONLY the translated text — no labels, no preamble.\n\n"
+            f"Content:\n{content[:4000]}"
         )
         response = model.generate_content(prompt)
         translated = response.text.strip()
-        print(f"[Executor] ✅ Translation done ({target_lang})")
+        print(f"[Executor] ✅ Detect+translate done (1 API call)")
         return translated
     except Exception as e:
         print(f"[Executor] ⚠️ Translation failed: {e}")

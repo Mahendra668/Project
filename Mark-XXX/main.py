@@ -45,7 +45,7 @@ FORMAT              = pyaudio.paInt16
 CHANNELS            = 1
 SEND_SAMPLE_RATE    = 16000
 RECEIVE_SAMPLE_RATE = 24000
-CHUNK_SIZE          = 1024
+CHUNK_SIZE          = 512   # 32ms frames — halved for lower mic latency
 
 pya = pyaudio.PyAudio()
 
@@ -97,11 +97,16 @@ def _update_memory_async(user_text: str, jarvis_text: str) -> None:
     _last_memory_input = text
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=_get_api_key())
-        model = genai.GenerativeModel("gemini-2.5-flash-lite")
+        import google.generativeai as _genai_mem
+        _genai_mem.configure(api_key=_get_api_key())
+        # Use module-level cached models to avoid reinit every 5 turns
+        if not hasattr(_update_memory_async, "_check_model"):
+            _update_memory_async._check_model   = _genai_mem.GenerativeModel("gemini-2.5-flash-lite")
+            _update_memory_async._extract_model = _genai_mem.GenerativeModel("gemini-2.5-flash-lite")
+        check_model   = _update_memory_async._check_model
+        extract_model = _update_memory_async._extract_model
 
-        check = model.generate_content(
+        check = check_model.generate_content(
             f"Does this message contain personal facts about the user "
             f"(name, age, city, job, hobby, relationship, birthday, preference)? "
             f"Reply only YES or NO.\n\nMessage: {text[:300]}"
@@ -109,7 +114,7 @@ def _update_memory_async(user_text: str, jarvis_text: str) -> None:
         if "YES" not in check.text.upper():
             return
 
-        raw = model.generate_content(
+        raw = extract_model.generate_content(
             f"Extract personal facts from this message. Any language.\n"
             f"Return ONLY valid JSON or {{}} if nothing found.\n"
             f"Extract: name, age, birthday, city, job, hobbies, preferences, relationships, language.\n"
@@ -150,7 +155,7 @@ TOOL_DECLARATIONS = [
             "properties": {
                 "app_name": {
                     "type": "STRING",
-                    "description": "Exact name of the application (e.g. 'WhatsApp', 'Chrome', 'Spotify')"
+                    "description": "Exact name of the application (e.g. 'WhatsApp', 'Chrome', 'Spotify', 'VS Code', 'Telegram', 'YouTube', 'Gmail', 'Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'Microsoft Word', 'Microsoft Excel', 'Microsoft PowerPoint', 'Microsoft Outlook', 'Microsoft Edge', 'Mozilla Firefox', 'Brave', 'Windows Media Player')"
                 }
             },
             "required": ["app_name"]
@@ -727,7 +732,16 @@ class JarvisLive:
                 async for response in turn:
 
                     if response.data:
-                        self.audio_in_queue.put_nowait(response.data)
+                        try:
+                            self.audio_in_queue.put_nowait(response.data)
+                        except asyncio.QueueFull:
+                            # Queue full — drop oldest chunk and insert new one
+                            # (better to skip a stale audio frame than crash)
+                            try:
+                                self.audio_in_queue.get_nowait()
+                            except asyncio.QueueEmpty:
+                                pass
+                            self.audio_in_queue.put_nowait(response.data)
 
                     if response.server_content:
                         sc = response.server_content
@@ -766,13 +780,15 @@ class JarvisLive:
                                 ).start()
 
                     if response.tool_call:
-                        fn_responses = []
-                        for fc in response.tool_call.function_calls:
+                        fcs = response.tool_call.function_calls
+                        for fc in fcs:
                             print(f"[JARVIS] 📞 Tool call: {fc.name}")
-                            fr = await self._execute_tool(fc)
-                            fn_responses.append(fr)
+                        # Run all tool calls in parallel — eliminates N×latency
+                        fn_responses = await asyncio.gather(
+                            *[self._execute_tool(fc) for fc in fcs]
+                        )
                         await self.session.send_tool_response(
-                            function_responses=fn_responses
+                            function_responses=list(fn_responses)
                         )
 
         except Exception as e:
@@ -816,7 +832,7 @@ class JarvisLive:
                 ):
                     self.session        = session
                     self._loop          = asyncio.get_event_loop() 
-                    self.audio_in_queue = asyncio.Queue()
+                    self.audio_in_queue = asyncio.Queue(maxsize=100)  # capped; drop-oldest on overflow
                     self.out_queue      = asyncio.Queue(maxsize=10)
 
                     print("[JARVIS] ✅ Connected.")
